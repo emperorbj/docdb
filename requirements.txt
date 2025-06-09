@@ -10,3 +10,4 @@ langchain-google-genai
 langchain-cohere
 PyPDFium2
 faiss-cpu
+python-multipart
