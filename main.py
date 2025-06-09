@@ -46,7 +46,7 @@ co_embedder = CohereEmbeddings(
 )
 
 # Initialize Google Gemini LLM
-llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.2)
+llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.2,google_api_key=os.getenv("GEMINI_API_KEY"))
 
 # Define Pydantic models
 class QueryRequest(BaseModel):
