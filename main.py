@@ -221,6 +221,40 @@ async def list_documents():
         print(f"Error in list_documents: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
+@app.delete("/documents/{document_id}")
+async def delete_document(document_id: str):
+    """
+    Deletes a document and its associated vector store from the system.
+    """
+    try:
+        # Find the document in MongoDB
+        document = await documents_collection.find_one({"document_id": document_id})
+        if not document:
+            raise HTTPException(status_code=404, detail="Document not found")
+
+        # Delete the document from MongoDB
+        delete_result = await documents_collection.delete_one({"document_id": document_id})
+        if delete_result.deleted_count == 0:
+            raise HTTPException(status_code=500, detail="Failed to delete document from database.")
+
+        # Delete the associated vector store directory
+        vector_store_path = document.get("vector_store_path")
+        if vector_store_path and os.path.exists(vector_store_path):
+            import shutil
+            shutil.rmtree(vector_store_path)
+            print(f"Deleted vector store directory: {vector_store_path}")
+        else:
+            print(f"Vector store path not found or does not exist for document_id: {document_id}")
+
+        return JSONResponse(status_code=200, content={"message": f"Document {document_id} and its vector store deleted successfully."})
+
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error in delete_document: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
